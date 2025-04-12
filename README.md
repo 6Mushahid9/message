@@ -37,18 +37,63 @@ npm install mongoose
 - Handle model re-registration in edge runtime
 
 ---
-
-## 🔐 Authentication (NextAuth)
+## 📧 Email (Resend + React Email)
 
 ```bash
-npm install next-auth
+npm install resend react-email
 ```
 
-- Setup `auth.ts` in `/lib`
-- Use Credentials Provider
-- Custom session, JWT callbacks
-- Module augmentation for types
+- Build HTML email templates
+- Send email using Resend
 
+Here’s a clean, concise markdown summary of both videos, focusing on the timeline of file creation and the overall flow:
+
+---
+
+# ✅ **User Signup System in Next.js with Custom OTP & Resend Email**  
+
+### 📌 **Goal:**
+Build a flexible custom signup flow that:
+- Requires unique username + email
+- Sends a **6-digit OTP** to the email
+- Marks users as unverified until OTP verification
+- **Does not hold usernames** for unverified users
+
+### 🛠️ **Key File Creations & Setup Timeline**
+
+| File / Folder                         | Purpose                                                                 |
+|--------------------------------------|-------------------------------------------------------------------------|
+| `.env`                               | Stores **Resend API key**                                              |
+| `lib/resend.ts`                      | Sets up and exports Resend client using API key                        |
+| `emails/verification-email.tsx`     | React Email template for sending OTP with `username` and `otp` props  |
+| `helpers/sendVerificationEmail.ts`  | Function to send verification email using `resend.emails.send()`       |
+| `pages/api/signup/route.ts`         | **API route** that begins the signup logic and email dispatching       |
+
+- We made **resend.ts** to send the email, but we can have many many emails so we will put them all in **helpers** folder. But for sending the email we will use templates (here: **sendVerificationEmail.tsx** component)  
+### 🧰 **Packages Installed**
+```bash
+npm install resend react-email bcryptjs
+```
+**After receiving** `username`, `email`, and `password` from frontend:
+
+1. ✅ **Check if username already exists** (only if user is verified).
+2. ✅ **Check if email already exists.**
+
+- 🔒 **If no user by email**:  
+  - Hash password  
+  - Generate OTP + expiry  
+  - Create new user with `isVerified: false`  
+  - Save to DB  
+  - Call `sendVerificationEmail()`
+
+- 🔁 **If user exists by email but is unverified**:  
+  - Hash new password  
+  - Generate new OTP + expiry  
+  - Update user record  
+  - Resend verification email
+
+3. 🛑 **If user exists and is verified**:  
+   Return error: “User already exists with this email.”
 ---
 
 ## 🔑 User Signup & Verification
@@ -65,14 +110,175 @@ npm install bcryptjs
 
 ---
 
-## 📧 Email (Resend + React Email)
+## 🔐 Authentication (NextAuth)
 
 ```bash
-npm install resend react-email
+npm install next-auth
 ```
 
-- Build HTML email templates
-- Send email using Resend
+- Setup `auth.ts` in `/lib`
+- Use Credentials Provider
+- Custom session, JWT callbacks
+- Module augmentation for types
+
+---
+
+
+## 🧠 **What's Our Goal Here?**
+We're setting up **authentication in a Next.js project using Auth.js (formerly NextAuth.js)**. This includes:
+
+- Custom login with email/password
+- Social logins (like GitHub/Google)
+- Secure sessions with JWT
+- Route protection using middleware
+- Custom UI pages (not the default boring ones)
+
+---
+
+## 🗂️ **Folder & File Structure Overview**
+
+Here’s what we’ll create, *why* we need it, and how it all connects.
+
+---
+
+### ✅ 1. `authOptions`
+**📍Location**: Usually in `lib/` or `utils/` or `server/` folder. But we have made it beside auth route.  
+**🔧 Purpose**: This file holds the **configuration for NextAuth/Auth.js**.
+
+**Includes:**
+- All the **Providers** (Credentials, GitHub, etc.)
+- `callbacks` (to customize tokens and session)
+- `pages` (to override sign-in UI routes)
+- `session` strategy (JWT-based in most cases)
+- Custom error throwing & handling (like user not verified)
+
+➡️ This is the *heart* of your Auth.js setup.
+
+---
+
+### ✅ 2. `[...nextauth] route`
+**📍Location**: `app/api/auth/[...nextauth]`  
+**🔧 Purpose**: It’s the **API route handler** that plugs in the config from `authOptions.ts`.
+
+```ts
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
+```
+
+➡️ This is where Auth.js *gets activated*. All sign-in/sign-out calls go here.
+
+---
+
+### ✅ 3. `middleware.ts`
+**📍Location**: Root of `src/` or project  
+**🔧 Purpose**: Runs **before any protected route loads**. Handles:
+
+- Checking if a token exists
+- Redirecting to `/signin` if unauthenticated
+- Preventing signed-in users from going back to `/signin`, `/signup`, etc.
+
+```ts
+import { getToken } from "next-auth/jwt";
+import { NextResponse } from "next/server";
+
+export async function middleware(req) {
+  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  // logic to redirect based on token presence
+}
+```
+
+➡️ It’s like a **security gatekeeper** for your app.
+
+---
+
+### ✅ 4. `types/next-auth.d.ts`
+**📍Location**: `types/` or root  
+**🔧 Purpose**: This is for **TypeScript module augmentation**.
+
+Why needed?
+When you add custom fields like `user._id` or `role` in the JWT/session,
+TypeScript doesn’t know those exist. You define them here.
+
+```ts
+declare module "next-auth" {
+  interface Session {
+    user: {
+      _id: string;
+      role: string;
+    };
+  }
+
+  interface JWT {
+    _id: string;
+    role: string;
+  }
+}
+```
+
+➡️ Tells TypeScript: "Hey, my session has extra info. Don't freak out."
+
+---
+
+### ✅ 5. `components/SessionProvider.tsx`
+**🔧 Purpose**: Wraps your app with Auth context.  
+**Why**: To use `useSession()` hook in any component.
+
+```tsx
+"use client";
+import { SessionProvider } from "next-auth/react";
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  return <SessionProvider>{children}</SessionProvider>;
+}
+```
+
+➡️ Without this, your frontend doesn’t know if a user is logged in.
+
+---
+
+### ✅ 6. Custom Pages
+Auth.js gives you default pages, but we’re making it beautiful.
+
+- `app/signin/page.tsx`
+- `app/signup/page.tsx`
+- `app/dashboard/page.tsx` (protected)
+- `app/verify/page.tsx` (optional email verification status page)
+
+➡️ These match the routes you define in `authOptions.pages`.
+
+---
+
+### ✅ 7. `User` Model + DB Utility
+If using credentials (email/password), you need to:
+- Hash passwords
+- Find users
+- Store new users
+
+So, you’ll have:
+
+- `models/User.ts`
+- `lib/dbConnect.ts`
+
+➡️ Required for custom login (not needed if you only use GitHub/Google).
+
+---
+
+## 🔄 What All Will Be Affected In Your Project?
+
+
+| Area | What you'll update |
+|------|--------------------|
+| 🔐 Authentication | `authOptions.ts`, `[...nextauth].ts`, `middleware.ts` |
+| 🔄 API Routes | Credential auth hits your DB (`User.ts`, `dbConnect.ts`) |
+| 💻 UI Pages | Custom `signin`, `signup`, `dashboard` pages |
+| 🧠 Session Access | Wrap app with `SessionProvider.tsx`, use `useSession()` |
+| 🔧 Type Safety | Extend types in `next-auth.d.ts` |
+| 🔁 App Routing | Route protection via `middleware.ts` logic |
+
 
 ---
 
