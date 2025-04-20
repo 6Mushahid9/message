@@ -296,11 +296,16 @@ So, you’ll have:
 
 ---
 
-## 🧠 AI Integration (OpenAI + Vercel SDK)
+🧠 AI Integration (OpenRouter)
 
 ```bash
-npm install ai openai
+npm install openai
 ```
+Using OpenRouter to access free and paid AI models (e.g., google/gemma-3-27b-it:free)
+
+Configured with https://openrouter.ai/api/v1 as the base URL
+
+Simple integration using the official openai package with custom headers for OpenRouter
 
 - Use `useCompletion` hook
 - Stream AI responses
@@ -334,7 +339,7 @@ npx shadcn-ui@latest init
 
 - Build with `Button`, `Input`, `Switch`, `Card`, etc.
 - Theme: Tailwind + Radix UI
-
+- it installs lucide react on its own.
 ---
 
 ## 🎠 Carousel (react-slick)

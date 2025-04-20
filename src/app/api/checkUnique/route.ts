@@ -8,7 +8,6 @@ const UsernameQuerySchema = z.object({
 });
 
 export async function GET(req: Request) {
-
     // check if method is GET. usefull for frontend, but now not used in updated Next.js
     // if (req.method !== "GET") {
     //     return Response.json({success: false, message: "Method not allowed"}, {status: 405});
@@ -20,14 +19,15 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const queryParam = searchParams.get("username");
         const result = UsernameQuerySchema.safeParse({ username: queryParam }); 
-        console.log(result);
         if (!result.success) {
-            // const userNameErrors = result.error.format().username?._errors || [];  // we can use this line to send reasons of invalidation
-            return Response.json({ success: false, message: "Invalid username" }, { status: 400 });
+            const userNameErrors = result.error.format().username?._errors || [];  
+            // // we can use above line to send reasons of invalidation
+            return Response.json({ success: false, message: userNameErrors }, { status: 400 });
         }
-
+        
         // check if username exists in db
         const {username} = result.data;
+        console.log(username);
         const userFound = await UserModel.findOne({username, isVerified: true});
         if (userFound) {
             return Response.json({success: false, message: "Username already exists"}, {status: 400}); 
