@@ -10,9 +10,8 @@ import mongoose from "mongoose";
 export async function GET(req: Request) {
     await dbConnect();
     const session = await getServerSession(authOptions);
-    const user = session?.user as User;
-    
-    if(!session || !user){
+    const _user = session?.user as User;
+    if(!session || !_user){
         return Response.json({
             message: "Unauthorized",
             success: false,
@@ -21,7 +20,7 @@ export async function GET(req: Request) {
     }
 
     // convert string to mongoose object id
-    const userId = new mongoose.Types.ObjectId(user._id);
+    const userId = new mongoose.Types.ObjectId(_user._id);
     try {
         // below is mongoose aggregation pipeline, this is used to get all messages of a user and sort them
         const user = await UserModel.aggregate([
@@ -30,6 +29,7 @@ export async function GET(req: Request) {
             { $sort: { "messages.createdAt": -1 } },
             { $group: {_id: "$_id", messages: { $push: "$messages" }}}
         ])
+        console.log(user);
 
         if(!user || user.length === 0){
             return Response.json({message: "User not found", success: false},{status: 404},) 
