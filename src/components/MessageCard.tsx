@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react';
-import axios, { AxiosError } from 'axios';
+import React from 'react';
+import axios from 'axios';
 // import dayjs from 'dayjs';
 import { X } from 'lucide-react';
 import { Message } from '@/model/User';
@@ -27,15 +27,13 @@ type MessageCardProps = {
 };
 
 export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
-
+  // here actually i have 2 methods, one to make changes in DB
+  //  and another one to update the UI
   const handleDeleteConfirm = async () => {
     try {
-      const response = await axios.delete<ApiResponse>(
-        `/api/delete-message/${message._id}`
-      );
+      await axios.delete<ApiResponse>(`/api/delete-message/${message._id}`);
       toast("Message deleted successfully")
       onMessageDelete(message._id as string);
-
     } catch (error) {
       toast("Failed to delete message");
     } 

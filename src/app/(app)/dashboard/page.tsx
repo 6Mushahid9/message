@@ -1,3 +1,6 @@
+// in this we could have used useState for switch,but this would lead to inconsistency
+// since it is also a type of form and we have already used React hook forms in sigh-up page
+
 'use client'
 
 import { useCallback, useEffect, useState } from "react"
@@ -18,7 +21,7 @@ import {MessageCard} from "@/components/MessageCard"
 const dashboard = () => {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isSwitching, setIsSwitching] = useState<boolean>(false)
+  const [isSwitching, setIsSwitching] = useState<boolean>(false) //using this because switch might take time
 
   const {data: session} = useSession()
   const form = useForm({
@@ -26,8 +29,14 @@ const dashboard = () => {
   })
 
   const {register, watch, setValue} = form
+  // we have to tell watch which field we want to watch, in this case it is acceptMessages
+  // so whereever we have acceptMessages in the form we will watch it
   const acceptMessages = watch("acceptMessages")
 
+// here we can work without useCallback but it is good practice to use it because
+// UseCallbck() allows us to isolate resource intensive functions so that they will not automatically run on every render.
+// This hook only runs when one of its dependencies update improving performance.
+// One reason to use useCallback is to prevent a component from re-rendering unless its props have changed.
   const fetchAcceptMessages = useCallback( async () => {
     setIsSwitching(true)
     try {
@@ -40,12 +49,12 @@ const dashboard = () => {
     }
   }, [setValue])
 
+
   const fetchMessages = useCallback( async (refresh: boolean=false) => {
     setIsLoading(true)
     setIsSwitching(false)
     try {
       const response = await axios.get("/api/get-messages")
-      console.log("from frontend",response.data)
       setMessages(response.data.data || [])
       if (refresh) {
         toast.success("Showing Latest Messages")
@@ -53,7 +62,7 @@ const dashboard = () => {
     }catch (error) {
       toast.error("Failed to fetch messages") 
     }finally {
-      setIsLoading(true)
+      setIsLoading(false)
       setIsLoading(false)
     }
   }, [setIsLoading, setMessages])
@@ -67,7 +76,9 @@ const dashboard = () => {
   const handleSwithchChange = async() => {
     try {
       const response = await axios.post("/api/accept-messages", {acceptmessages: !acceptMessages})
-        toast.success(response.data.message)
+      // see here we are watching it for change in switch
+      setValue("acceptMessages", !acceptMessages)
+      toast.success(response.data.message)
       }catch (error) {
       return toast.error("Failed to update message settings")
     }
@@ -82,6 +93,7 @@ const dashboard = () => {
   // const baseUrl = `${window.location.protocol}//${window.location.host}`
   const baseUrl = typeof window !== "undefined" ? `${window.location.protocol}//${window.location.host}` : "";
   const profileUrl = `${baseUrl}/u/${username}`
+  
   const copyToClipboard = () => {
     navigator.clipboard.writeText(profileUrl)
     toast.success("Copied to clipboard")
