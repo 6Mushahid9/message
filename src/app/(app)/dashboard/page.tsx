@@ -55,6 +55,7 @@ const dashboard = () => {
     setIsSwitching(false)
     try {
       const response = await axios.get("/api/get-messages")
+      // console.log("Musahid --> ",response)
       setMessages(response.data.data || [])
       if (refresh) {
         toast.success("Showing Latest Messages")
