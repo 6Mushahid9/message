@@ -17,7 +17,7 @@ const Navbar = () => {
           status === 'authenticated' ? (
             <>
               {user?.username && (
-                <span className="mr-4">Welcome, {user.username}</span>
+                <span className="font-bold mr-30">Welcome, {user.username}</span>
               )}
               <Button
                 onClick={() => signOut()}

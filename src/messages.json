@@ -1,17 +1,17 @@
 [
     {
-      "title": "Message from User123",
-      "content": "Hey, how are you doing today?",
-      "received": "10 minutes ago"
+      "title": "Step 1",
+      "content": "Sign-up.",
+      "received": "Just Name and Email required."
     },
     {
-      "title": "Message from SecretAdmirer",
-      "content": "I really liked your recent post!",
-      "received": "2 hours ago"
+      "title": "Step 2",
+      "content": "Copy and share your private link to friends.",
+      "received": "They wont need an account to send you a message!"
     },
     {
-      "title": "Message from MysteryGuest",
-      "content": "Do you have any book recommendations?",
-      "received": "1 day ago"
+      "title": "Step 3",
+      "content": "Find your messages by login in.",
+      "received": "You can delete and even stop recieving messages."
     }
   ]

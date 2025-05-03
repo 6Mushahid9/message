@@ -17,16 +17,22 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, RefreshCcw } from "lucide-react"
 import {MessageCard} from "@/components/MessageCard"
+import { MoveLeft } from "lucide-react"
+import Link from "next/link"
+import Loader from "@/components/Loader"
 
 const dashboard = () => {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSwitching, setIsSwitching] = useState<boolean>(false) //using this because switch might take time
+  const [loading, setLoading] = useState<boolean>(true)
 
   const {data: session} = useSession()
   const form = useForm({
     resolver: zodResolver(acceptMessageSchema)
   })
+
+  const username = session?.user.username
 
   const {register, watch, setValue} = form
   // we have to tell watch which field we want to watch, in this case it is acceptMessages
@@ -38,16 +44,17 @@ const dashboard = () => {
 // This hook only runs when one of its dependencies update improving performance.
 // One reason to use useCallback is to prevent a component from re-rendering unless its props have changed.
   const fetchAcceptMessages = useCallback( async () => {
+    if (!username) return;
     setIsSwitching(true)
     try {
-      const respose = await axios.get("/api/accept-message")
+      const respose = await axios.get(`/api/accept-message?username=${username}`)
       setValue("acceptMessages", respose.data.isAcceptingMessages)
     } catch (error) {
       return toast.error("Failed to fetch message setting")
     } finally {
       setIsSwitching(false)
     }
-  }, [setValue])
+  }, [setValue, username])
 
 
   const fetchMessages = useCallback( async (refresh: boolean=false) => {
@@ -61,22 +68,43 @@ const dashboard = () => {
         toast.success("Showing Latest Messages")
       }
     }catch (error) {
-      toast.error("Failed to fetch messages") 
+      toast.error("No messages found") 
     }finally {
       setIsLoading(false)
       setIsLoading(false)
     }
   }, [setIsLoading, setMessages])
 
+  // useEffect(() => {
+  //   if(!session || !session.user) return
+  //   fetchMessages()
+  //   fetchAcceptMessages()
+  // }, [session, fetchMessages, fetchAcceptMessages, setValue])
+
   useEffect(() => {
-    if(!session || !session.user) return
-    fetchMessages()
-    fetchAcceptMessages()
-  }, [session, fetchMessages, fetchAcceptMessages, setValue])
+    const init = async () => {
+      setLoading(true);
+      await fetchAcceptMessages();  // wait for completion
+      await fetchMessages()        // wait for completion
+      setLoading(false);
+    };
+  
+    if (username) {
+      init();
+    }
+  }, [session, fetchMessages, fetchAcceptMessages, setValue]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-white bg-gray-900">
+        <Loader />
+      </div>
+    );
+  }
 
   const handleSwithchChange = async() => {
     try {
-      const response = await axios.post("/api/accept-messages", {acceptmessages: !acceptMessages})
+      const response = await axios.post("/api/accept-message", {acceptmessages: !acceptMessages})
       // see here we are watching it for change in switch
       setValue("acceptMessages", !acceptMessages)
       toast.success(response.data.message)
@@ -90,7 +118,7 @@ const dashboard = () => {
     setMessages(messages.filter((message) => message._id !== messageId));
   };
 
-  const username = session?.user
+  
   // const baseUrl = `${window.location.protocol}//${window.location.host}`
   const baseUrl = typeof window !== "undefined" ? `${window.location.protocol}//${window.location.host}` : "";
   const profileUrl = `${baseUrl}/u/${username}`
@@ -161,6 +189,9 @@ const dashboard = () => {
           <p>No messages to display.</p>
         )}
       </div>
+        <Link href="/">
+          <Button className="w-10 mt-10"><MoveLeft /></Button>
+        </Link>
     </div>
     </>
   )

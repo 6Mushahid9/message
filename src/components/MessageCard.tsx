@@ -31,9 +31,9 @@ export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
   //  and another one to update the UI
   const handleDeleteConfirm = async () => {
     try {
+      onMessageDelete(message._id as string);
       await axios.delete<ApiResponse>(`/api/delete-message/${message._id}`);
       toast("Message deleted successfully")
-      onMessageDelete(message._id as string);
     } catch (error) {
       toast("Failed to delete message");
     } 
@@ -71,7 +71,6 @@ export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
         </div>
         <div className="text-sm">
           {dayjs(message.createdAt).format('MMM D, YYYY h:mm A')}
-          {/* i have to use "sday js" here but i dont know when was this component made */}
         </div>
       </CardHeader>
       <CardContent></CardContent>

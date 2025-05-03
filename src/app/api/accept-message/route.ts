@@ -21,13 +21,9 @@ export async function POST(request: Request) {
 
     const userId = user._id
     const {acceptmessages} = await request.json();
-
+    console.log(userId)
     try {
-        const updatedUser = await UserModel.findByIdAndUpdate(
-            userId, 
-            {isAcceptingMessages: acceptmessages},
-            {new: true}
-        );
+        const updatedUser = await UserModel.findByIdAndUpdate(userId, {isAcceptingMessages: acceptmessages},{new: true});
 
         if(!updatedUser){
             return Response.json(
@@ -52,34 +48,39 @@ export async function POST(request: Request) {
 // method to just check if user is accepting messages
 export async function GET(request: Request) {
     await dbConnect();
-
-    // want current logged in user
-    const session = await getServerSession(authOptions);
-    const user = session?.user as User; 
-    if(!session ||!session.user){
-        return Response.json(
-            {success: false, message: "Unauthorized"},
-            {status: 401}
-        ) 
+  
+    const { searchParams } = new URL(request.url);
+    const username = searchParams.get("username");
+  
+    if (!username) {
+      return Response.json(
+        { success: false, message: "Username is required" },
+        { status: 400 }
+      );
     }
-
+  
     try {
-        const userId = user._id;
-        const foundUser = await UserModel.findById(userId);
-        if(!foundUser){
-            return Response.json(
-                {success: false, message: "User not found"},
-                {status: 404}
-            )
-        } 
+      const foundUser = await UserModel.findOne({ username });
+      if (!foundUser) {
         return Response.json(
-            {success: true, isAcceptingMessages: user.isAcceptingMessages, message: "User found", user: foundUser},
-            {status: 200} 
-        )
+          { success: false, message: "User not found" },
+          { status: 404 }
+        );
+      }
+  
+      return Response.json(
+        {
+          success: true,
+          isAcceptingMessages: foundUser.isAcceptingMessages,
+          message: "User found",
+        },
+        { status: 200 }
+      );
     } catch (error) {
-        return Response.json(
-            {success: false, message: "Failed to get message accepting status"},
-            {status: 500} 
-        )
+      return Response.json(
+        { success: false, message: "Failed to get message status" },
+        { status: 500 }
+      );
     }
-}
+  }
+  

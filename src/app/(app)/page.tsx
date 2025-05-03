@@ -1,14 +1,15 @@
 'use client';
 
-import { Mail } from 'lucide-react'; // Assuming you have an icon for messages
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import messages from '@/messages.json';
-
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from '@/components/ui/carousel';
+
 
 export default function Home() {
   return (
@@ -25,9 +26,7 @@ export default function Home() {
         </section>
 
         {/* Carousel for Messages */}
-        <Carousel
-          className="w-full max-w-lg md:max-w-xl"
-        >
+        <Carousel className="w-full max-w-lg md:max-w-xl">
           <CarouselContent>
             {messages.map((message, index) => (
               <CarouselItem key={index} className="p-4">
@@ -36,7 +35,6 @@ export default function Home() {
                     <CardTitle>{message.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 md:space-x-4">
-                    <Mail className="flex-shrink-0" />
                     <div>
                       <p>{message.content}</p>
                       <p className="text-xs text-muted-foreground">
@@ -48,12 +46,13 @@ export default function Home() {
               </CarouselItem>
             ))}
           </CarouselContent>
+          <CarouselPrevious className='text-gray-900'/>
+          <CarouselNext className='text-gray-900'/>
         </Carousel>
       </main>
-
       {/* Footer */}
       <footer className="text-center p-4 md:p-6 bg-gray-900 text-white">
-        © 2023 True Feedback. All rights reserved.
+        © {new Date().getFullYear()} True Feedback. All rights reserved with Mushahid.
       </footer>
     </>
   );

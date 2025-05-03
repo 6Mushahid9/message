@@ -11,18 +11,18 @@ export const authOptions: NextAuthOptions = {
       id: "credentials",
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
+        identifier: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
       // now when we have given custom made credentials, we have to give authorize function
-      async authorize(credentials: any): Promise<any>{
+      async authorize(credentials: any): Promise<any>{        
         await dbConnect();
         try {
             // find user by credentials
             const user = await UserModel.findOne({ 
                 $or:[
-                {email: credentials.identifier},
-                {username: credentials.identifier},
+                  {email: credentials.identifier},
+                  {username: credentials.identifier},
                 ] 
             })
 
