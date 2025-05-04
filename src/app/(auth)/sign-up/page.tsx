@@ -89,12 +89,14 @@ const signUp =() => {
   // here we are actually signing up the user
   // you can skip this part ": z.infer<typeof signupSchema>" but this is industry standard
   const handleSubmit = async (data: z.infer<typeof signupSchema>) => {
-    setcheckingName(true)
+    setIsSubmitting(true)
 
     // first check for gmail typos
     const suggestion = suggestCorrectGmail(data.email)
     if (suggestion) {
       toast(`Did you mean: ${suggestion}?`);
+      setIsSubmitting(false)
+      return
     }
 
     try {
@@ -105,7 +107,7 @@ const signUp =() => {
       const axiosError = error as AxiosError<ApiResponse>
       toast.error(axiosError.response?.data.message?? "Error signing up")
     } finally {
-      setcheckingName(false)
+      setIsSubmitting(false)
     }
   }
 

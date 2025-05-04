@@ -3,7 +3,7 @@ import { verifySchema } from '@/schemas/verifySchema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {z} from 'zod'
 import { useParams, useRouter } from 'next/navigation'
-import React from 'react'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import axios, { AxiosError } from 'axios'
 import { toast } from 'sonner'
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 const verify = () => {
     const router = useRouter()
     const param = useParams<{username: string}>()
+    const [isLoading, setIsLoading] = useState(false);
 
     // zod implementation
     const form = useForm<z.infer<typeof verifySchema>>({
@@ -26,18 +27,20 @@ const verify = () => {
     })
 
     const onSubmit = async (data: z.infer<typeof verifySchema>) => {
+        setIsLoading(true)
         try {
             const response =  await axios.post('/api/verify-code',{
                 username : param.username,
                 code: data.code
             })
-
-        toast.success(response.data.message)
-        router.replace('/sign-in')
+            
+            toast.success(response.data.message)
+            router.replace('/sign-in')
         } catch (error) {
             const axiosError = error as AxiosError<ApiResponse>
             toast.error(axiosError.response?.data.message?? "Error verifying code")
         }
+        setIsLoading(false)
     }
     return (
         <>
@@ -62,7 +65,9 @@ const verify = () => {
                             </FormItem>
                         )}
                         />
-                        <Button type="submit">Verify</Button>
+                        <Button className='w-full' type="submit" disabled={isLoading}>
+                            {isLoading ? 'Verifying...' : 'Verify'}
+                        </Button>
                     </form>
                     </Form>
                 </div>

@@ -17,9 +17,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { signInSchema } from '@/schemas/signInSchema';
+import { useState } from 'react';
 
 export default function SignInForm() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   // below is a hook from react-hook-form that allows us to validate the form data 
   const form = useForm<z.infer<typeof signInSchema>>({
@@ -31,11 +33,13 @@ export default function SignInForm() {
   });
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
+    setIsLoading(true);
     const result = await signIn('credentials', {
       redirect: false,
       identifier: data.identifier,
       password: data.password,
     });
+    setIsLoading(false);
 
     if (result?.error) {
       if (result.error === 'CredentialsSignin') {
@@ -83,9 +87,12 @@ export default function SignInForm() {
                 </FormItem>
               )}
             />
-            <Button className='w-full' type="submit">Sign In</Button>
+            <Button className='w-full' type="submit" disabled={isLoading}>
+              {isLoading ? 'Signing in...' : 'Sign In'}
+            </Button>
           </form>
         </Form>
+        
         <div className="text-center mt-4">
           <p>
             Not a member yet?{' '}
