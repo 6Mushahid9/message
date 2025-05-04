@@ -1,17 +1,32 @@
 [
-    {
-      "title": "Step 1",
-      "content": "Sign-up.",
-      "received": "Just Name and Email required."
-    },
-    {
-      "title": "Step 2",
-      "content": "Copy and share your private link to friends.",
-      "received": "They wont need an account to send you a message!"
-    },
-    {
-      "title": "Step 3",
-      "content": "Find your messages by login in.",
-      "received": "You can delete and even stop recieving messages."
-    }
-  ]
+  {
+    "title": "Step 1",
+    "content": "Create your profile in seconds.",
+    "received": "Just your name, email and a 🤏 password. We’ll handle the rest."
+  },
+  {
+    "title": "Step 2",
+    "content": "Ask MUSHAHID to Verify your account.",
+    "received": "You'll need a one-time code (OTP) to continue. 🔐"
+  },
+  {
+    "title": "Step 3",
+    "content": "Get your anonymous message link.",
+    "received": "A personal URL you can share with anyone 🌏 — no sign-in needed for friends to send you messages."
+  },
+  {
+    "title": "Step 4",
+    "content": "Share it with your friends, followers, or audience.",
+    "received": "Perfect for feedback, fun, or just seeing what people think 💭."
+  },
+  {
+    "title": "Step 5",
+    "content": "Log in and manage your messages anytime.👨🏽‍💼",
+    "received": "Click on 'Mystery Message': View new messages, delete unwanted ones, or pause recieving messages."
+  },
+  {
+    "title": "Bonus 🎁",
+    "content": "Let AI help you break the ❄.",
+    "received": "Integrated AI suggests friendly messages for those who need help getting started."
+  }
+]

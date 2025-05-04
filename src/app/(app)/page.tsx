@@ -34,10 +34,10 @@ export default function Home() {
                   <CardHeader>
                     <CardTitle>{message.title}</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 md:space-x-4">
+                  <CardContent className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 md:space-x-4 text-2xl">
                     <div>
                       <p>{message.content}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground mt-1 text-lg">
                         {message.received}
                       </p>
                     </div>

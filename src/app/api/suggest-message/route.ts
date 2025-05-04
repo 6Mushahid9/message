@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       messages: [
         {
           role: 'user',
-          content: `${prompt} add emojis here and there. Format the output as a JSON array of strings.`,
+          content: `${prompt} add emojis here and there. Dont give any decorated text like bold italic etc. Format the output as a JSON array of strings.`,
         },
       ],
     });
