@@ -13,6 +13,7 @@ const Navbar = () => {
     <nav className='p-4 md:p-6 shadow-md bg-gray-900 text-white'>
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
         <Link href="/dashboard" className='text-xl font-bold mb-4 md:mb-0'>Mystery message</Link>
+
         {
           status === 'authenticated' ? (
             <>
@@ -34,6 +35,7 @@ const Navbar = () => {
             </Link>
           )
         }
+        
       </div>
     </nav>
   )

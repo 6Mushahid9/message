@@ -46,13 +46,14 @@ export default function Home() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className='text-gray-900'/>
-          <CarouselNext className='text-gray-900'/>
+          <CarouselPrevious className='text-gray-900 cursor-pointer'/>
+          <CarouselNext className='text-gray-900 cursor-pointer'/>
         </Carousel>
       </main>
+      
       {/* Footer */}
       <footer className="text-center p-4 md:p-6 bg-gray-900 text-white">
-        © {new Date().getFullYear()} True Feedback. All rights reserved with Mushahid.
+        © {new Date().getFullYear()} True Feedback. All rights reserved with <span className='font-semibold'>Mushahid</span>.
       </footer>
     </>
   );

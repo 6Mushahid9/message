@@ -4,7 +4,7 @@ import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { User } from "next-auth";
 
-// method to toggle accepting messages boolean
+// method to toggle "accepting-messages" boolean
 export async function POST(request: Request) {
     await dbConnect();
 
@@ -19,6 +19,7 @@ export async function POST(request: Request) {
         )
     } 
 
+    // in our case we got state of boolean from frontend so store as it is
     const userId = user._id
     const {acceptmessages} = await request.json();
     console.log(userId)
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
 }
 
 
-// method to just check if user is accepting messages
+// method to just check if user is accepting messages, for this user existence is required session is not
 export async function GET(request: Request) {
     await dbConnect();
   

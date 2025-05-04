@@ -21,7 +21,7 @@ export async function GET(req: Request) {
         const result = UsernameQuerySchema.safeParse({ username: queryParam }); 
         if (!result.success) {
             const userNameErrors = result.error.format().username?._errors || [];  
-            // // we can use above line to send reasons of invalidation
+            // we use above line to send reasons of invalidation
             return Response.json({ success: false, message: userNameErrors }, { status: 400 });
         }
         
@@ -36,7 +36,6 @@ export async function GET(req: Request) {
         return Response.json({success: true, message: "Username available"});
 
     } catch (error) {
-        // console.error("Error checking username", error);
         return Response.json(
             {success: false, message: "Error checking username" }, 
             { status: 500 }

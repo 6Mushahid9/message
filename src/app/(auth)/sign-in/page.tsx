@@ -21,6 +21,7 @@ import { signInSchema } from '@/schemas/signInSchema';
 export default function SignInForm() {
   const router = useRouter();
 
+  // below is a hook from react-hook-form that allows us to validate the form data 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {

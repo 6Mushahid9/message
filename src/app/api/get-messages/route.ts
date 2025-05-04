@@ -21,17 +21,18 @@ export async function GET(req: NextRequest) {
 
   const userId = new mongoose.Types.ObjectId(token._id as string);
 
+  // below is the aggregation pipeline to get all messages of a user and sort them by createdAt
   try {
-    const user = await UserModel.aggregate([
+    const allMessages = await UserModel.aggregate([
       { $match: { _id: userId } },
       { $unwind: "$messages" },
       { $sort: { "messages.createdAt": -1 } },
       { $group: { _id: "$_id", messages: { $push: "$messages" } } }
     ]);
            
-    if (!user || user.length === 0) {
+    if (!allMessages || allMessages.length === 0) {
       return Response.json(
-        { message: "User not found", success: false },
+        { message: "No message found", success: false },
         { status: 404 }
       );
     }
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
       {
         message: "User found",
         success: true,
-        data: user[0].messages
+        data: allMessages[0].messages
       },
       { status: 200 }
     );

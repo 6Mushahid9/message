@@ -1,5 +1,4 @@
 'use client'
-import { useSession, signIn, signOut } from "next-auth/react"
 import {zodResolver} from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -51,7 +50,7 @@ const signUp =() => {
       } catch (error) {
         // setnameMessage("Error checking username")
         // we could have used above method but we worked hard on backend route for different messages
-
+        // to use messages from backend use ApiResponse we made
         const axiosError = error as AxiosError<ApiResponse>
         setnameMessage(axiosError.response?.data.message ?? "Error checking username")
       } finally {
@@ -63,11 +62,41 @@ const signUp =() => {
     handleCheckName()
   }, [username])
 
+  // this function will check for typos in mails during user creation
+  const suggestCorrectGmail=(email: string): string | null =>{
+    const typos: Record<string, string> = {
+      "gamil.com": "gmail.com",
+      "gnail.com": "gmail.com",
+      "gmial.com": "gmail.com",
+      "hotmial.com": "hotmail.com",
+      "yaho.com": "yahoo.com",
+      "outlok.com": "outlook.com",
+      "icloud.co": "icloud.com",
+    };
+  
+    const parts = email.toLowerCase().split("@");
+    if (parts.length !== 2) return null;
+  
+    const domain = parts[1];
+    const correction = typos[domain];
+    if (correction) {
+      return `${parts[0]}@${correction}`;
+    }
+    return null;
+  }
+
   // we are using form to get values from input fields, so we have to make a function to handle submit
   // here we are actually signing up the user
   // you can skip this part ": z.infer<typeof signupSchema>" but this is industry standard
   const handleSubmit = async (data: z.infer<typeof signupSchema>) => {
     setcheckingName(true)
+
+    // first check for gmail typos
+    const suggestion = suggestCorrectGmail(data.email)
+    if (suggestion) {
+      toast(`Did you mean: ${suggestion}?`);
+    }
+
     try {
       const response = await axios.post('/api/sign-up', data)
       toast.success(response.data.message)

@@ -1,3 +1,7 @@
+// we will first make a class/structure of documents we are gonna use (message and user)
+// then we will make a schema and modal for them
+// here we are making message model iside user model
+
 import mongoose, {Schema, Document} from "mongoose";
 
 export interface Message extends Document {

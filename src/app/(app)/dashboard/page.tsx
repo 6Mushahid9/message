@@ -8,18 +8,19 @@ import { Message } from "@/model/User"
 import { useSession } from "next-auth/react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { z } from "zod"
+// import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { acceptMessageSchema } from "@/schemas/acceptMessageSchema"
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, RefreshCcw } from "lucide-react"
+import { Copy, Loader2, RefreshCcw } from "lucide-react"
 import {MessageCard} from "@/components/MessageCard"
 import { MoveLeft } from "lucide-react"
 import Link from "next/link"
 import Loader from "@/components/Loader"
+import { ApiResponse } from "@/types/apiResponse"
 
 const dashboard = () => {
   const [messages, setMessages] = useState<Message[]>([])
@@ -50,7 +51,8 @@ const dashboard = () => {
       const respose = await axios.get(`/api/accept-message?username=${username}`)
       setValue("acceptMessages", respose.data.isAcceptingMessages)
     } catch (error) {
-      return toast.error("Failed to fetch message setting")
+      const axiosError = error as AxiosError<ApiResponse>
+      toast.error(axiosError.response?.data.message?? "Failed to fetch message setting")
     } finally {
       setIsSwitching(false)
     }
@@ -68,27 +70,21 @@ const dashboard = () => {
         toast.success("Showing Latest Messages")
       }
     }catch (error) {
-      toast.error("No messages found") 
+      const axiosError = error as AxiosError<ApiResponse>
+      toast.error(axiosError.response?.data.message?? "No messages found")
     }finally {
       setIsLoading(false)
-      setIsLoading(false)
+      setIsSwitching(false)
     }
   }, [setIsLoading, setMessages])
-
-  // useEffect(() => {
-  //   if(!session || !session.user) return
-  //   fetchMessages()
-  //   fetchAcceptMessages()
-  // }, [session, fetchMessages, fetchAcceptMessages, setValue])
 
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await fetchAcceptMessages();  // wait for completion
-      await fetchMessages()        // wait for completion
+      await fetchAcceptMessages();
+      await fetchMessages()        
       setLoading(false);
     };
-  
     if (username) {
       init();
     }
@@ -109,7 +105,8 @@ const dashboard = () => {
       setValue("acceptMessages", !acceptMessages)
       toast.success(response.data.message)
       }catch (error) {
-      return toast.error("Failed to update message settings")
+        const axiosError = error as AxiosError<ApiResponse>
+        toast.error(axiosError.response?.data.message?? "Failed to update message settings")
     }
   }
 
@@ -133,19 +130,20 @@ const dashboard = () => {
   }
   return (
     <>
-    <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 bg-white rounded w-full max-w-6xl">
+    <div className="bg-gray-800 h-screen">
+    <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 bg-gray-800 text-white rounded w-full max-w-6xl">
       <h1 className="text-4xl font-bold mb-4">User Dashboard</h1>
 
       <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2">Copy Your Unique Link</h2>{' '}
-        <div className="flex items-center">
+        <div className="flex items-center border border-dashed rounded-2xl px-3 py-2">
           <input
             type="text"
             value={profileUrl}
             disabled
             className="input input-bordered w-full p-2 mr-2"
           />
-          <Button onClick={copyToClipboard}>Copy</Button>
+          <Button onClick={copyToClipboard} className="cursor-pointer"><Copy /></Button>
         </div>
       </div>
 
@@ -155,6 +153,7 @@ const dashboard = () => {
           checked={acceptMessages}
           onCheckedChange={handleSwithchChange}
           disabled={isSwitching}
+            className=" data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500 !ring-0 !border-none"
         />
         <span className="ml-2">
           Accept Messages: {acceptMessages ? 'On' : 'Off'}
@@ -163,7 +162,7 @@ const dashboard = () => {
       <Separator />
 
       <Button
-        className="mt-4"
+        className="mt-4 text-gray-900"
         variant="outline"
         onClick={(e) => {
           e.preventDefault();
@@ -176,6 +175,8 @@ const dashboard = () => {
           <RefreshCcw className="h-4 w-4" />
         )}
       </Button>
+
+      {/* Message Cards */}
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         {messages.length > 0 ? (
           messages.map((message, index) => (
@@ -189,9 +190,11 @@ const dashboard = () => {
           <p>No messages to display.</p>
         )}
       </div>
+
         <Link href="/">
-          <Button className="w-10 mt-10"><MoveLeft /></Button>
+          <Button className="w-10 mt-10 bg-stone-100 text-gray-900 hover:bg-stone-100 cursor-pointer"><MoveLeft className="size-5"/></Button>
         </Link>
+    </div>
     </div>
     </>
   )

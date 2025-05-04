@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from "@/components/ui/input"
 import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { messageSchema } from '@/schemas/messageSchema'
 import { z } from 'zod'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Loader from '@/components/Loader';
+import { ApiResponse } from '@/types/apiResponse'
+import { Lightbulb, Send, Sparkle } from 'lucide-react'
 
 const messageTypes = [
   { value: 'conversation', label: 'Start a Conversation' },
@@ -39,13 +41,14 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [messageType, setMessageType] = useState('roast');
 
+  // i am not showing state just for fun 😈
   const fetchAcceptMessages = async () => {
     try {
-      // const res = await axios.get(`/api/accept-message`);
       const res = await axios.get(`/api/accept-message?username=${username}`);
       setIsAccepting(res.data.isAcceptingMessages);
     } catch (error) {
-      toast.error("Failed to fetch message settings");
+      const axiosError = error as AxiosError<ApiResponse>
+      toast.error(axiosError.response?.data.message?? "Failed to fetch message settings")
     }
   };
   
@@ -56,7 +59,9 @@ const ProfilePage = () => {
     }
   
     setIsSending(true);
+    // here i am not using ApiResponse because i am just lazy 😴
     try {
+      // Validate the message using zod
       messageSchema.parse({ content: message });
   
       const res = await axios.post('/api/send-message', { username, content: message });
@@ -83,10 +88,10 @@ const ProfilePage = () => {
     setIsSuggesting(true);
     try {
       const res = await axios.post('/api/suggest-message',{type: messageType});
-      // console.log(res.data.suggestions);
       setSuggestedMessages(res.data.suggestions);
     } catch (error: any) {
-      toast.error("Unable to suggest message");
+      const axiosError = error as AxiosError<ApiResponse>
+      toast.error(axiosError.response?.data.message?? "Unable to suggest message")
     }
     setIsSuggesting(false);
   };
@@ -112,14 +117,13 @@ const ProfilePage = () => {
     );
   }
   
-
   return (
     <div className='flex-grow flex flex-col px-4 md:px-24 py-12 bg-gray-800 text-white min-h-screen'>
       <h1 className='text-3xl md:text-5xl font-bold text-center'>Public Profile Link</h1> 
       <p className='mt-10 text-xl md:text-2xl font-bold'>Send anonymous message to {username}</p>
 
       <Input
-        className='mt-5'
+        className='mt-5 border border-dashed'
         type="text"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
@@ -127,43 +131,42 @@ const ProfilePage = () => {
         name="message"
       />
 
-
       <Button
         onClick={handleSendMessage}
         disabled={isSending}
         className='w-min p-6 text-sm md:text-xl font-bold mx-auto mt-5 cursor-pointer disabled:opacity-50'
       >
-        {isSending ? 'Sending...' : 'Send'}
+        {isSending ? 'Sending...' : <>Send <Send /></>}
       </Button>
 
       <div className='flex justify-between mt-10'>
-      <Button
-        onClick={handleSuggest}
-        className='w-min p-6 text-sm md:text-xl font-bold cursor-pointer'
-        disabled={isSuggesting}
-      >
-        {isSuggesting ? 'Thinking...' : 'Suggest Message'}
-      </Button>
+        <Button
+          onClick={handleSuggest}
+          className='w-min p-6 text-sm md:text-xl font-bold cursor-pointer'
+          disabled={isSuggesting}
+        >
+          {isSuggesting ? 'Thinking...' : <>Suggest Message <Lightbulb className='size-6'/></>}
+        </Button>
 
-      {/* <label className="mb-2 text-sm font-medium text-white">Choose Type:</label> */}
-      <select
-        value={messageType}
-        onChange={(e) => setMessageType(e.target.value)}
-        className="bg-gray-800 text-white p-2 rounded-md w-full max-w-sm border"
-      >
-        {messageTypes.map((type) => (
-          <option key={type.value} value={type.value}>
-            {type.label}
-          </option>
-        ))}
-      </select>
+        {/* dropdown for suggestion types */}
+        <select
+          value={messageType}
+          onChange={(e) => setMessageType(e.target.value)}
+          className="bg-gray-800 text-white p-2 rounded-md w-full max-w-sm border"
+        >
+          {messageTypes.map((type) => (
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
+          ))}
+        </select>
 
-      <Button className='w-min p-6 text-sm md:text-xl font-bold cursor-pointer'>
-        <Link href={"/sign-in"}>Wanna have an Account ?</Link>
+        <Button className='w-min p-6 text-sm md:text-xl font-bold cursor-pointer'>
+        <Link href="/sign-up" target="_blank" rel="noopener noreferrer">Wanna have an Account ?</Link>
         </Button>
       </div>
 
-
+      {/* showing suggested messages here */}
       <div className='mt-10 border rounded-2xl p-2 space-y-2'>
         {suggestedMessages.map((msg, idx) => (
           <p
